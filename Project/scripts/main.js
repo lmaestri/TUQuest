@@ -11,9 +11,7 @@ function showPosition(position) {
     lat = position.coords.latitude;
     lon = position.coords.longitude;
     latlon = new google.maps.LatLng(lat, lon)
-    mapholder = document.getElementById('mapholder')
-    mapholder.style.height='250px';
-    mapholder.style.width='500px';
+    mapholder = document.getElementById('mapholder');
 
     var myOptions={
         center:latlon,zoom:14,
@@ -21,7 +19,7 @@ function showPosition(position) {
         disableDefaultUI: true
     }
     
-    var map = new google.maps.Map(document.getElementById("mapholder"),myOptions);
+    var map = new google.maps.Map(mapholder, myOptions);
     var marker = new google.maps.Marker({position:latlon,map:map,title:"You are here!"});
 }
 
