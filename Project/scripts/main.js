@@ -16,10 +16,9 @@ function showPosition(position) {
     mapholder.style.width='500px';
 
     var myOptions={
-    center:latlon,zoom:14,
-    mapTypeId:google.maps.MapTypeId.ROADMAP,
-    mapTypeControl:false,
-    navigationControlOptions:{style:google.maps.NavigationControlStyle.SMALL}
+        center:latlon,zoom:14,
+        mapTypeId:google.maps.MapTypeId.ROADMAP,
+        disableDefaultUI: true
     }
     
     var map = new google.maps.Map(document.getElementById("mapholder"),myOptions);
