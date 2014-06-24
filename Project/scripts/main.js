@@ -1,43 +1,84 @@
-var x = document.getElementById("messages");
 
-function getLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(showPosition,showError);
-    } else { 
-        x.innerHTML = "Geolocation is not supported by this browser.";}
+var map;
+var goldStar = {
+    path: 'M 125,5 155,90 245,90 175,145 200,230 125,180 50,230 75,145 5,90 95,90 z',
+    fillColor: 'yellow',
+    fillOpacity: 0.8,
+    scale: 0.1,
+    strokeColor: 'gold',
+    strokeWeight: 1
+  };
+var marker = new google.maps.Marker({
+		icon: goldStar,
+		map: map
+	  });
+
+function initialize() {
+
+  var mapOptions = {
+    zoom: 15
+  };
+  map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+  // Try HTML5 geolocation
+  if(navigator.geolocation) {
+    navigator.geolocation.watchPosition(function(position) {
+      var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+      /**
+	  var infowindow = new google.maps.InfoWindow({
+        map: map,
+        position: pos,
+        content: 'Location found using HTML5.'
+      });
+	  */
+	  
+	  marker.setPosition(pos);
+	  
+	  //addMarker(goldstar);
+
+      map.setCenter(pos);
+	  
+	var x = document.getElementById("pos");
+	x.innerHTML="Latitude: " + position.coords.latitude + "<br>Longitude: " + position.coords.longitude;	
+
+	  
+    }, function() {
+      handleNoGeolocation(true);
+    });
+  } else {
+    // Browser doesn't support Geolocation
+    handleNoGeolocation(false);
+  }
 }
 
-function showPosition(position) {
-    lat = position.coords.latitude;
-    lon = position.coords.longitude;
-    latlon = new google.maps.LatLng(lat, lon)
-    mapholder = document.getElementById('mapholder');
+function handleNoGeolocation(errorFlag) {
+  if (errorFlag) {
+    var content = 'Error: The Geolocation service failed.';
+  } else {
+    var content = 'Error: Your browser doesn\'t support geolocation.';
+  }
 
-    var myOptions={
-        center:latlon,zoom:14,
-        mapTypeId:google.maps.MapTypeId.ROADMAP,
-        disableDefaultUI: true
-    }
-    
-    var map = new google.maps.Map(mapholder, myOptions);
-    var marker = new google.maps.Marker({position:latlon,map:map,title:"You are here!"});
+  var options = {
+    map: map,
+    position: new google.maps.LatLng(60, 105),
+    content: content
+  };
+
+  var infowindow = new google.maps.InfoWindow(options);
+  map.setCenter(options.position);
 }
 
-function showError(error) {
-    switch(error.code) {
-        case error.PERMISSION_DENIED:
-            x.innerHTML = "User denied the request for Geolocation."
-            break;
-        case error.POSITION_UNAVAILABLE:
-            x.innerHTML = "Location information is unavailable."
-            break;
-        case error.TIMEOUT:
-            x.innerHTML = "The request to get user location timed out."
-            break;
-        case error.UNKNOWN_ERROR:
-            x.innerHTML = "An unknown error occurred."
-            break;
-    }
+function addMarker(icon){
+	var marker = new google.maps.Marker({
+		position: map.getCenter(),
+		icon: icon,
+		map: map
+	});
+
+
 }
 
-google.maps.event.addDomListener(window, 'load', getLocation);
+
+
+google.maps.event.addDomListener(window, 'load', initialize);
