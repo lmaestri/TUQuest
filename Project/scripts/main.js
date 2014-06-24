@@ -1,5 +1,6 @@
 
 var map;
+var pos;
 var goldStar = {
     path: 'M 125,5 155,90 245,90 175,145 200,230 125,180 50,230 75,145 5,90 95,90 z',
     fillColor: 'yellow',
@@ -8,6 +9,7 @@ var goldStar = {
     strokeColor: 'gold',
     strokeWeight: 1
   };
+  
 var marker = new google.maps.Marker({
 		icon: goldStar,
 		map: map
@@ -16,32 +18,43 @@ var marker = new google.maps.Marker({
 function initialize() {
 
   var mapOptions = {
-    zoom: 15
+    zoom: 16
   };
   map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
   // Try HTML5 geolocation
   if(navigator.geolocation) {
-    navigator.geolocation.watchPosition(function(position) {
-      var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+    navigator.geolocation.getCurrentPosition(function(position) {
+      pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
 
-      /**
-	  var infowindow = new google.maps.InfoWindow({
+      
+	 /* var infowindow = new google.maps.InfoWindow({
         map: map,
         position: pos,
         content: 'Location found using HTML5.'
       });
 	  */
-	  
-	  marker.setPosition(pos);
+	map.setCenter(pos);
+
+
+	marker.setPosition(pos);
+	
+	var circle = {
+      strokeColor: '#0000FF',
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: '#0000FF',
+      fillOpacity: 0.35,
+      map: map,
+	  radius: 30
+    };
+
+
+	var radius = new google.maps.Circle(circle);
+	radius.bindTo('center', marker, 'position');
+
 	  
 	  //addMarker(goldstar);
-
-      map.setCenter(pos);
-	  
-	var x = document.getElementById("pos");
-	x.innerHTML="Latitude: " + position.coords.latitude + "<br>Longitude: " + position.coords.longitude;	
-
 	  
     }, function() {
       handleNoGeolocation(true);
@@ -50,7 +63,27 @@ function initialize() {
     // Browser doesn't support Geolocation
     handleNoGeolocation(false);
   }
+  
+  watchPosition();
+  
 }
+
+function watchPosition(){
+	if(navigator.geolocation) {
+		navigator.geolocation.watchPosition(function(position) {
+		  pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+		  
+		var x = document.getElementById("pos");
+		x.innerHTML="Latitude: " + position.coords.latitude + "<br>Longitude: " + position.coords.longitude;
+		
+		marker.setPosition(pos);
+		
+		}, function() {
+		  handleNoGeolocation(true);
+		});
+	}
+}
+
 
 function handleNoGeolocation(errorFlag) {
   if (errorFlag) {
