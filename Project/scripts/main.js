@@ -4,7 +4,7 @@ var pos;
 var infoParagraph;
 
 var playerIcon = {
-  url : 'images/player_small.png',
+  url : 'images/player.png',
   size : new google.maps.Size(32,32),
   origin: new google.maps.Point(0,0),
   anchor: new google.maps.Point(16, 16)
@@ -23,6 +23,7 @@ markerTypes['player'] = {
   map : null,
   icon : playerIcon,
   title : 'Player',
+  draggable : true,
   zIndex : 1
 };
 
@@ -30,12 +31,13 @@ markerTypes['chest'] = {
   map : null,
   icon : chestIcon,
   title : 'Chest',
+  draggable : true,
   zIndex : 2
 };
 
 var playerMarker;
 
-var markersArray = [];
+var chestArray = [];
 
 var mapOptions = {
     zoom: 18,
@@ -56,11 +58,13 @@ var circle = new google.maps.Circle({
 function initialize() {
   infoParagraph = document.getElementById('info');
   map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-  circle.setMap(map);
   
   playerMarker = new google.maps.Marker(markerTypes['player']);
   playerMarker.setMap(map);
-
+  
+  circle.setMap(map);
+  circle.bindTo('center', playerMarker, 'position');
+  
   watchPosition();
 }
 
@@ -77,8 +81,7 @@ function setPosition(position){
   map.panTo(pos);
   circle.setCenter(pos);
   playerMarker.setPosition(pos);
-  chestPos = new google.maps.LatLng(position.coords.latitude - 0.000001, position.coords.longitude);
-  addMarker(markerTypes['chest'], )
+  addChest(pos);
   writeInfo(position);
 }
 
@@ -107,38 +110,51 @@ function writeInfo(position){
   infoParagraph.innerHTML = "Latitude: " + position.coords.latitude + "<br>Longitude: " + position.coords.longitude;
 }
 
-function addMarker(location, markerType) {
-  marker = new google.maps.Marker(markerType);
+function addChest(location) {
+  marker = new google.maps.Marker(markerTypes['chest']);
   marker.setMap(map);
+  google.maps.event.addListener(marker, 'click', onClickChest);
   marker.setPosition(location);
-  markersArray.push(marker);
+  chestArray.push(marker);
 }
 
 // Removes the overlays from the map, but keeps them in the array
 function clearOverlays() {
-  if (markersArray) {
-    for (i in markersArray) {
-      markersArray[i].setMap(null);
+  if (chestArray) {
+    for (i in chestArray) {
+      chestArray[i].setMap(null);
     }
   }
 }
 
 // Shows any overlays currently in the array
 function showOverlays() {
-  if (markersArray) {
-    for (i in markersArray) {
-      markersArray[i].setMap(map);
+  if (chestArray) {
+    for (i in chestArray) {
+      chestArray[i].setMap(map);
     }
   }
 }
 
+function clearChest(){
+  
+}
+
 // Deletes all markers in the array by removing references to them
 function deleteOverlays() {
-  if (markersArray) {
-    for (i in markersArray) {
-      markersArray[i].setMap(null);
+  if (chestArray) {
+    for (i in chestArray) {
+      chestArray[i].setMap(null);
     }
-    markersArray.length = 0;
+    chestArray.length = 0;
+  }
+}
+
+function onClickChest(event){
+  alert(event);
+
+  function clearChest(){
+    
   }
 }
 
