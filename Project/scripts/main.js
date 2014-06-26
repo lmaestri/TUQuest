@@ -1,7 +1,7 @@
-
 var map;
 var pos;
-var infoParagraph;
+var posInfo;
+var coins = 0;
 
 var playerIcon = {
   url : 'images/player.png',
@@ -17,6 +17,20 @@ var chestIcon = {
   anchor: new google.maps.Point(16, 16)
 };
 
+var chestDescriptions = {}
+
+chestDescriptions['see'] = {
+  position : new google.maps.LatLng(48.199188,16.371275)
+};
+
+chestDescriptions['haupteingang'] = {
+  position : new google.maps.LatLng(48.199050,16.369963)
+};
+
+chestDescriptions['josef_hadersperger'] = {
+  position : new google.maps.LatLng(48.199188,16.370961)
+};
+
 var markerTypes = {};
 
 markerTypes['player'] = {
@@ -24,7 +38,7 @@ markerTypes['player'] = {
   icon : playerIcon,
   title : 'Player',
   draggable : true,
-  zIndex : 1
+  zIndex : 2
 };
 
 markerTypes['chest'] = {
@@ -32,7 +46,7 @@ markerTypes['chest'] = {
   icon : chestIcon,
   title : 'Chest',
   draggable : true,
-  zIndex : 2
+  zIndex : 1
 };
 
 var playerMarker;
@@ -52,11 +66,11 @@ var circle = new google.maps.Circle({
   fillOpacity: 0.35,
   map: map,
   clickable: false,
-  radius: 30
+  radius: 15
 });
 
 function initialize() {
-  infoParagraph = document.getElementById('info');
+  posInfo = document.getElementById('info');
   map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
   
   playerMarker = new google.maps.Marker(markerTypes['player']);
@@ -65,6 +79,10 @@ function initialize() {
   circle.setMap(map);
   circle.bindTo('center', playerMarker, 'position');
   
+  addChest(chestDescriptions['see']);
+  addChest(chestDescriptions['haupteingang']);
+  addChest(chestDescriptions['josef_hadersperger']);
+
   watchPosition();
 }
 
@@ -79,9 +97,7 @@ function watchPosition(){
 function setPosition(position){
   pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
   map.panTo(pos);
-  circle.setCenter(pos);
   playerMarker.setPosition(pos);
-  addChest(pos);
   writeInfo(position);
 }
 
@@ -103,19 +119,31 @@ function showError(error) {
 }
 
 function writeInfo(content){
-  infoParagraph.innerHTML = content;
+  posInfo.innerHTML = "<span>" + content + "</span>";
 }
 
 function writeInfo(position){
-  infoParagraph.innerHTML = "Latitude: " + position.coords.latitude + "<br>Longitude: " + position.coords.longitude;
+  posInfo.innerHTML = "<span>" + "Latitude: " + position.coords.latitude + "<br>Longitude: " + position.coords.longitude + "</span>";
 }
 
 function addChest(location) {
-  marker = new google.maps.Marker(markerTypes['chest']);
+  var marker = new google.maps.Marker(markerTypes['chest']);
   marker.setMap(map);
-  google.maps.event.addListener(marker, 'click', onClickChest);
   marker.setPosition(location);
   chestArray.push(marker);
+  google.maps.event.addListener(marker, 'click', function(){
+    onClickChest(marker, event);
+  });
+}
+
+function addChest(chestDescription) {
+  var marker = new google.maps.Marker(markerTypes['chest']);
+  marker.setMap(map);
+  marker.setPosition(chestDescription.position);
+  chestArray.push(marker);
+  google.maps.event.addListener(marker, 'click', function(){
+    onClickChest(marker, event);
+  });
 }
 
 // Removes the overlays from the map, but keeps them in the array
@@ -136,8 +164,14 @@ function showOverlays() {
   }
 }
 
-function clearChest(){
-  
+function clearChest(chestToDelete){
+  if(chestArray){
+    for( i in chestArray){
+      if(chestArray[i] === chestToDelete){
+        chestArray[i].setMap(null);
+      }
+    }
+  }
 }
 
 // Deletes all markers in the array by removing references to them
@@ -150,12 +184,23 @@ function deleteOverlays() {
   }
 }
 
-function onClickChest(event){
-  alert(event);
-
-  function clearChest(){
-    
+function onClickChest(marker, event){
+  var bounds = circle.getBounds();
+  if(bounds.contains(marker.position)){
+    coins = coins + Math.floor(Math.random()*5)+1;
+    clearChest(marker);
+    content = "Found <b>" + coins + " coins</b>!";
+    openInfoWindow(content, playerMarker);
   }
+}
+
+function openInfoWindow(contentText, marker){
+  contentText = "<div id = 'infoWindow'>" + contentText + "</div>";
+  infowindow = new google.maps.InfoWindow({
+      content: contentText
+  });
+  infowindow.open(map,marker);
+  setTimeout(function(){infowindow.close()}, 1000);
 }
 
 google.maps.event.addDomListener(window, 'load', initialize);
